@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ChemEdu | Acid Bases ChemEdu - Kelompok 8</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #e0f2fe 0%, #fae8ff 50%, #d9f99d 100%); background-attachment: fixed; }
+
+    /* ===== AUTH OVERLAY ===== */
+    #auth-overlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: linear-gradient(135deg, #1e1b4b 0%, #4c1d95 50%, #6d28d9 100%);
+      display: flex; align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    #auth-overlay.hidden { display: none; }
+    .auth-card {
+      background: rgba(255,255,255,0.97);
+      border-radius: 2rem;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+      width: 100%; max-width: 440px;
+      padding: 2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 5px;
+      background: linear-gradient(90deg, #ec4899, #8b5cf6, #06b6d4);
+    }
+    .auth-tab {
+      display: flex; border-radius: 1rem; background: #f1f5f9;
+      padding: 4px; margin-bottom: 1.5rem; gap: 4px;
+    }
+    .auth-tab-btn {
+      flex: 1; padding: 10px; border-radius: 12px; font-size: 14px;
+      font-weight: 600; border: none; cursor: pointer; transition: all 0.25s;
+      background: transparent; color: #64748b;
+    }
+    .auth-tab-btn.active {
+      background: white; color: #7c3aed;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .auth-form { display: none; }
+    .auth-form.active { display: block; animation: fadeInUp 0.3s ease; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+    .auth-input {
+      width: 100%; padding: 12px 16px;
+      border: 2px solid #e2e8f0; border-radius: 12px;
+      font-size: 14px; transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 12px; display: block;
+    }
+    .auth-input:focus { outline: none; border-color: #8b5cf6; }
+    .auth-input-group { position: relative; margin-bottom: 12px; }
+    .auth-input-group .auth-input { margin-bottom: 0; }
+    .auth-input-icon {
+      position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+      color: #94a3b8; pointer-events: none;
+    }
+    .auth-input-group .auth-input { padding-left: 40px; }
+    .auth-btn {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #7c3aed, #ec4899);
+      color: white; border: none; border-radius: 14px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; font-family: 'Inter', sans-serif;
+      margin-top: 6px;
+    }
+    .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124,58,237,0.4); }
+    .auth-btn:active { transform: translateY(0); }
+    .auth-error {
+      background: #fef2f2; border: 1px solid #fca5a5;
+      color: #b91c1c; padding: 10px 14px; border-radius: 10px;
+      font-size: 13px; margin-bottom: 12px; display: none;
+    }
+    .auth-success {
+      background: #f0fdf4; border: 1px solid #86efac;
+      color: #15803d; padding: 10px 14px; border-radius: 10px;
+      font-size: 13px; margin-bottom: 12px; display: none;
+    }
+    .auth-divider { text-align: center; color: #94a3b8; font-size: 12px; margin: 16px 0 12px; position: relative; }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; position: absolute; top: 50%; width: 42%; height: 1px;
+      background: #e2e8f0;
+    }
+    .auth-divider::before { left: 0; }
+    .auth-divider::after { right: 0; }
+    .role-picker { display: flex; gap: 8px; margin-bottom: 14px; }
+    .role-option {
+      flex: 1; padding: 10px 8px; border: 2px solid #e2e8f0;
+      border-radius: 12px; text-align: center; cursor: pointer;
+      transition: all 0.2s; font-size: 13px;
+    }
+    .role-option:hover { border-color: #8b5cf6; }
+    .role-option.selected { border-color: #8b5cf6; background: #f3e8ff; }
+    .role-option .role-emoji { font-size: 22px; display: block; margin-bottom: 4px; }
+    .auth-hint { background: #faf5ff; border-radius: 10px; padding: 10px 12px; font-size: 11px; color: #6b7280; margin-top: 14px; }
+    .auth-hint strong { color: #7c3aed; }
+    .password-toggle {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: #94a3b8; background: none; border: none; padding: 2px;
+    }
+    .particles { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+    .particle {
+      position: absolute; border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      animation: float linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) scale(0); opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { transform: translateY(-100px) scale(1); opacity: 0; }
+    }
+
+    /* ===== MAIN APP LAYOUT ===== */
+    .sidebar {
+      background: linear-gradient(145deg, #1e1b4b 0%, #2e1065 100%);
+      transition: width 0.2s ease;
+      box-shadow: 4px 0 25px rgba(0,0,0,0.2);
+      overflow-y: auto; overflow-x: visible;
+      position: relative; width: 280px; min-width: 70px; max-width: 400px;
+    }
+    .sidebar.collapsed { width: 70px !important; min-width: 70px !important; }
+    .sidebar.collapsed .sidebar-item span,
+    .sidebar.collapsed .logo-text,
+    .sidebar.collapsed .user-info-text { display: none; }
+    .sidebar.collapsed .sidebar-item { justify-content: center; gap: 0; padding: 12px 0; margin: 6px 8px; }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+      margin: 6px 12px; border-radius: 14px; transition: all 0.2s;
+      color: #c4b5fd; cursor: pointer; white-space: nowrap;
+    }
+    .sidebar-item:hover { background: #4c1d95; color: white; transform: translateX(3px); }
+    .sidebar-item.active { background: #8b5cf6; color: white; box-shadow: 0 6px 14px rgba(139,92,246,0.5); }
+    .resize-handle { position: absolute; right: -5px; top: 0; width: 8px; height: 100%; cursor: ew-resize; background: transparent; z-index: 100; }
+    .resize-handle:hover { background: rgba(139,92,246,0.5); }
+    .toggle-sidebar-btn {
+      position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #4c1d95; border-radius: 30px; padding: 8px 12px;
+      color: white; cursor: pointer; z-index: 101; font-size: 12px; white-space: nowrap;
+    }
+    .sidebar.collapsed .toggle-sidebar-btn { left: 35px; transform: none; writing-mode: vertical-rl; padding: 12px 6px; }
+    .page { display: none; animation: fadeIn 0.35s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .glass-card { background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); border-radius: 1.5rem; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 8px 25px -6px rgba(0,0,0,0.1); }
+    .theory-card { cursor: pointer; transition: all 0.2s; background: white; border-radius: 1rem; }
+    .theory-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px -8px rgba(0,0,0,0.2); }
+    .detail-content { display: none; margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 1rem; border-left: 4px solid #8b5cf6; }
+    .detail-content.show { display: block; animation: slideDown 0.25s; }
+    @keyframes slideDown { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+    .substance-card { background: white; border-radius: 1rem; padding: 8px 4px; text-align: center; cursor: pointer; transition: 0.2s; border: 1px solid #e2e8f0; }
+    .substance-card.active { border-color: #8b5cf6; background: #f3e8ff; transform: scale(0.98); }
+    .ph-gradient-bar { background: linear-gradient(to right, #b91c1c,#dc2626,#ea580c,#d97706,#ca8a04,#4d7c0f,#16a34a,#0891b2,#0284c7,#1d4ed8,#4f46e5,#7c3aed,#6d28d9,#4c1d95,#1e0050); height: 10px; border-radius: 20px; }
+    .video-wrapper { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 1rem; overflow: hidden; background: #0f172a; }
+    .video-wrapper iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .chat-message { background: #e2e8f0; border-radius: 1rem; padding: 8px 12px; margin-bottom: 8px; max-width: 85%; }
+    .chat-message.user { background: #8b5cf6; color: white; margin-left: auto; }
+    .menu-toggle { display: none; }
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; z-index: 50; height: 100%; transform: translateX(-100%); transition: transform 0.3s ease; width: 280px !important; }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .resize-handle, .toggle-sidebar-btn { display: none; }
+      .menu-toggle { display: block; }
+      .main-content { margin-left: 0 !important; width: 100%; }
+    }
+    .ph-scale-box { display: flex; height: 40px; border-radius: 20px; overflow: hidden; margin: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .ph-segment { flex: 1; text-align: center; color: white; font-weight: bold; font-size: 12px; line-height: 40px; }
+    .ion-diagram { display: flex; justify-content: center; align-items: center; gap: 20px; background: #1e293b; padding: 15px; border-radius: 20px; color: white; }
+    .comp-bar-container { background: #e2e8f0; border-radius: 10px; height: 20px; width: 100%; margin: 10px 0; }
+    .indicator-strip { display: flex; height: 30px; border-radius: 15px; overflow: hidden; margin: 8px 0; }
+    .quiz-option { transition: all 0.15s; cursor: pointer; }
+    .quiz-option:hover:not(:disabled) { background-color: #e0e7ff; }
+    .badge-guru { background: linear-gradient(135deg,#f59e0b,#ef4444); }
+    .badge-murid { background: linear-gradient(135deg,#06b6d4,#8b5cf6); }
+  </style>
+</head>
+<body>
+
+<!-- ===================== AUTH OVERLAY ===================== -->
+<div id="auth-overlay">
+  <!-- Floating particles -->
+  <div class="particles" id="particles-container"></div>
+
+  <div class="auth-card">
+    <!-- Logo -->
+    <div style="text-align:center; margin-bottom:1.5rem;">
+      <div style="width:60px;height:60px;background:linear-gradient(135deg,#ec4899,#8b5cf6);border-radius:20px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+      </div>
+      <h1 style="font-size:1.75rem;font-weight:800;background:linear-gradient(135deg,#7c3aed,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">ChemEdu</h1>
+      <p style="color:#94a3b8;font-size:13px;margin-top:4px;">Platform Kimia Asam Basa · Kelompok 8 · UM</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="auth-tab">
+      <button class="auth-tab-btn active" id="tab-login" onclick="switchTab('login')">🔐 Masuk</button>
+      <button class="auth-tab-btn" id="tab-register" onclick="switchTab('register')">📝 Daftar</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <div class="auth-form active" id="form-login">
+      <div id="login-error" class="auth-error"></div>
+      <div class="auth-input-group">
+        <span class="auth-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <input type="text" id="login-username" class="auth-input" placeholder="Username" autocomplete="username">
+      </div>
+      <div class="auth-input-group">
+        <span class="auth-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <input type="password" id="login-password" class="auth-input" placeholder="Password" autocomplete="current-password">
+        <button class="password-toggle" type="button" onclick="togglePwd('login-password')" title="Tampilkan/Sembunyikan">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+      <button class="auth-btn" onclick="doLogin()">Masuk ke ChemEdu →</button>
+      <div class="auth-hint">
+        <strong>🔑 Akun Demo:</strong><br>
+        Guru: <strong>guru_demo</strong> / <strong>guru123</strong><br>
+        Murid: <strong>murid_demo</strong> / <strong>murid123</strong>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div class="auth-form" id="form-register">
+      <div id="reg-error" class="auth-error"></div>
+      <div id="reg-success" class="auth-success"></div>
+
+      <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:8px;">Daftar sebagai:</label>
+      <div class="role-picker">
+        <div class="role-option selected" id="role-murid" onclick="selectRole('murid')">
+          <span class="role-emoji">👩‍🎓</span>
+          <span style="font-weight:600;font-size:13px;">Murid</span>
+        </div>
+        <div class="role-option" id="role-guru" onclick="selectRole('guru')">
+          <span class="role-emoji">👨‍🏫</span>
+          <span style="font-weight:600;font-size:13px;">Guru</span>
+        </div>
+      </div>
+
+      <div id="guru-code-box" style="display:none;margin-bottom:12px;">
+        <div class="auth-input-group">
+          <span class="auth-input-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </span>
+          <input type="text" id="reg-guru-code" class="auth-input" placeholder="Kode Guru (wajib)" style="margin-bottom:0;">
+        </div>
+        <p style="font-size:11px;color:#94a3b8;margin-top:4px;">Kode guru diberikan oleh admin / pengajar. Default: <strong>CHEM2026</strong></p>
+      </div>
+
+      <div class="auth-input-group">
+        <span class="auth-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <input type="text" id="reg-username" class="auth-input" placeholder="Username (min. 4 karakter)" style="margin-bottom:0;">
+      </div>
+
+      <div class="auth-input-group" style="margin-top:12px;">
+        <span class="auth-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </span>
+        <input type="text" id="reg-nama" class="auth-input" placeholder="Nama Lengkap" style="margin-bottom:0;">
+      </div>
+
+      <div class="auth-input-group" style="margin-top:12px;">
+        <span class="auth-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <input type="password" id="reg-password" class="auth-input" placeholder="Password (min. 6 karakter)" style="margin-bottom:0;">
+        <button class="password-toggle" type="button" onclick="togglePwd('reg-password')" title="Tampilkan/Sembunyikan">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+
+      <div class="auth-input-group" style="margin-top:12px;">
+        <span class="auth-input-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </span>
+        <input type="password" id="reg-confirm" class="auth-input" placeholder="Konfirmasi Password" style="margin-bottom:0;">
+        <button class="password-toggle" type="button" onclick="togglePwd('reg-confirm')" title="Tampilkan/Sembunyikan">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+
+      <button class="auth-btn" onclick="doRegister()" style="margin-top:14px;">Buat Akun ✨</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div class="flex min-h-screen" id="app">
+  <!-- SIDEBAR -->
+  <div id="sidebar" class="sidebar" style="width: 280px;">
+    <div class="resize-handle" id="resizeHandle"></div>
+    <div class="p-6 border-b border-violet-800 flex items-center gap-2">
+      <div class="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-xl flex items-center justify-center shadow-lg">
+        <i data-lucide="atom" class="w-6 h-6 text-white"></i>
+      </div>
+      <span class="text-xl font-bold text-white logo-text">Chem<span class="text-pink-400">Edu</span></span>
+    </div>
+    <div class="flex-1 py-5 overflow-y-auto" id="sidebar-menu"></div>
+    <div class="toggle-sidebar-btn" id="toggleSidebarBtn">◀ Sembunyikan</div>
+    <div class="p-4 border-t border-violet-800 text-center text-xs text-violet-400" id="user-info"></div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content flex-1">
+    <div class="bg-white/80 backdrop-blur sticky top-0 z-30 p-4 flex items-center gap-3 border-b shadow-sm">
+      <button id="menuToggle" class="menu-toggle p-2 rounded-lg bg-white/80"><i data-lucide="menu"></i></button>
+      <h2 id="page-title" class="text-xl font-bold text-gray-800">Dashboard</h2>
+      <div class="ml-auto flex items-center gap-3">
+        <span id="role-badge" class="text-xs px-3 py-1 rounded-full font-semibold text-white"></span>
+        <button id="logout-btn" class="text-red-500 text-sm hover:underline flex items-center gap-1">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Keluar
+        </button>
+      </div>
+    </div>
+    <div class="p-5 md:p-8" id="page-content"></div>
+  </div>
+</div>
+
+<script>
+// ======================= AUTH SYSTEM =======================
+const GURU_SECRET = 'CHEM2026';
+let selectedRole = 'murid';
+
+function getUsers() {
+  const stored = localStorage.getItem('chemedu_users');
+  if (!stored) {
+    // Seed default accounts
+    const defaults = [
+      { username: 'guru_demo', password: 'guru123', nama: 'Guru Demo', role: 'guru' },
+      { username: 'murid_demo', password: 'murid123', nama: 'Murid Demo', role: 'murid' }
+    ];
+    localStorage.setItem('chemedu_users', JSON.stringify(defaults));
+    return defaults;
+  }
+  return JSON.parse(stored);
+}
+
+function saveUsers(users) {
+  localStorage.setItem('chemedu_users', JSON.stringify(users));
+}
+
+function switchTab(tab) {
+  document.getElementById('form-login').classList.toggle('active', tab === 'login');
+  document.getElementById('form-register').classList.toggle('active', tab === 'register');
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+  clearMessages();
+}
+
+function clearMessages() {
+  ['login-error','reg-error','reg-success'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) { el.style.display = 'none'; el.textContent = ''; }
+  });
+}
+
+function showMsg(id, msg) {
+  const el = document.getElementById(id);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+function togglePwd(inputId) {
+  const input = document.getElementById(inputId);
+  input.type = input.type === 'password' ? 'text' : 'password';
+}
+
+function selectRole(role) {
+  selectedRole = role;
+  document.getElementById('role-murid').classList.toggle('selected', role === 'murid');
+  document.getElementById('role-guru').classList.toggle('selected', role === 'guru');
+  document.getElementById('guru-code-box').style.display = role === 'guru' ? 'block' : 'none';
+}
+
+function doLogin() {
+  clearMessages();
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  if (!username || !password) { showMsg('login-error', '⚠️ Isi username dan password terlebih dahulu!'); return; }
+  const users = getUsers();
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) { showMsg('login-error', '❌ Username atau password salah. Coba lagi atau daftar akun baru.'); return; }
+  currentUser = { username: user.username, nama: user.nama, role: user.role };
+  document.getElementById('auth-overlay').classList.add('hidden');
+  initApp();
+}
+
+function doRegister() {
+  clearMessages();
+  const username = document.getElementById('reg-username').value.trim();
+  const nama = document.getElementById('reg-nama').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+  const guruCode = document.getElementById('reg-guru-code')?.value.trim();
+
+  if (!username || !nama || !password || !confirm) { showMsg('reg-error', '⚠️ Semua kolom wajib diisi!'); return; }
+  if (username.length < 4) { showMsg('reg-error', '⚠️ Username minimal 4 karakter.'); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) { showMsg('reg-error', '⚠️ Username hanya boleh huruf, angka, dan underscore (_).'); return; }
+  if (password.length < 6) { showMsg('reg-error', '⚠️ Password minimal 6 karakter.'); return; }
+  if (password !== confirm) { showMsg('reg-error', '⚠️ Konfirmasi password tidak cocok.'); return; }
+  if (selectedRole === 'guru' && guruCode !== GURU_SECRET) { showMsg('reg-error', '🔒 Kode guru salah! Hubungi pengajar Anda.'); return; }
+
+  const users = getUsers();
+  if (users.find(u => u.username === username)) { showMsg('reg-error', '❌ Username sudah digunakan. Coba username lain.'); return; }
+
+  users.push({ username, password, nama, role: selectedRole });
+  saveUsers(users);
+  showMsg('reg-success', `✅ Akun berhasil dibuat! Silakan masuk dengan username: ${username}`);
+  document.getElementById('reg-username').value = '';
+  document.getElementById('reg-nama').value = '';
+  document.getElementById('reg-password').value = '';
+  document.getElementById('reg-confirm').value = '';
+  setTimeout(() => switchTab('login'), 1800);
+}
+
+// Floating particles
+(function() {
+  const container = document.getElementById('particles-container');
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    const size = Math.random() * 40 + 10;
+    p.className = 'particle';
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;animation-duration:${Math.random()*12+8}s;animation-delay:${Math.random()*10}s;`;
+    container.appendChild(p);
+  }
+})();
+
+// Enter key support
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('form-login').classList.contains('active')) doLogin();
+  else doRegister();
+});
+
+// ======================= DATA PENGGUNA & NILAI =======================
+let currentUser = null;
+let studentScores = JSON.parse(localStorage.getItem('chemedu_scores')) || [];
+let studentSubmitted = JSON.parse(localStorage.getItem('chemedu_submitted')) || {};
+
+// ======================= RESIZABLE & AUTO-COLLAPSE SIDEBAR =======================
+const sidebar = document.getElementById('sidebar');
+const resizeHandle = document.getElementById('resizeHandle');
+let startX, startWidth;
+function resizeMouseDown(e) { if (window.innerWidth <= 768) return; startX = e.clientX; startWidth = parseInt(getComputedStyle(sidebar).width, 10); document.addEventListener('mousemove', resizeMouseMove); document.addEventListener('mouseup', resizeMouseUp); }
+function resizeMouseMove(e) { let newWidth = startWidth + (e.clientX - startX); if (newWidth < 180) newWidth = 180; if (newWidth > 400) newWidth = 400; sidebar.style.width = newWidth + 'px'; sidebar.style.minWidth = newWidth + 'px'; }
+function resizeMouseUp() { document.removeEventListener('mousemove', resizeMouseMove); document.removeEventListener('mouseup', resizeMouseUp); localStorage.setItem('sidebarWidth', sidebar.style.width); }
+if (resizeHandle) resizeHandle.addEventListener('mousedown', resizeMouseDown);
+const toggleBtn = document.getElementById('toggleSidebarBtn');
+let isCollapsed = false;
+function setCollapse(state) { if (window.innerWidth <= 768) return; isCollapsed = state; if (isCollapsed) sidebar.classList.add('collapsed'); else sidebar.classList.remove('collapsed'); localStorage.setItem('sidebarCollapsed', isCollapsed); toggleBtn.innerHTML = isCollapsed ? '☰ Buka' : '◀ Sembunyikan'; }
+toggleBtn.addEventListener('click', () => setCollapse(!isCollapsed));
+function autoCollapseSidebar() { if (window.innerWidth <= 768) sidebar.classList.remove('mobile-open'); else if (!isCollapsed) setCollapse(true); }
+const savedWidth = localStorage.getItem('sidebarWidth'); if (savedWidth && window.innerWidth > 768) { sidebar.style.width = savedWidth; sidebar.style.minWidth = savedWidth; }
+const savedCollapse = localStorage.getItem('sidebarCollapsed') === 'true'; if (savedCollapse && window.innerWidth > 768) setCollapse(true);
+
+// ======================= SOAL SUMATIF (10 soal) =======================
+const soalBank = [
+  { q: "Menurut teori Arrhenius, zat dikatakan asam jika...", opts: ["Dalam air menghasilkan ion H⁺","Dalam air menghasilkan ion OH⁻","Donor proton","Akseptor proton"], correct: 0, expl: "Arrhenius: asam menghasilkan ion H⁺ dalam air." },
+  { q: "Konsentrasi ion H⁺ dalam larutan H₂SO₄ 0,02 M adalah...", opts: ["0,02 M","0,04 M","0,01 M","0,001 M"], correct: 1, expl: "H₂SO₄ bervalensi 2, [H⁺] = 0,02 × 2 = 0,04 M." },
+  { q: "pH larutan CH₃COOH 0,1 M (Ka = 10⁻⁵) adalah...", opts: ["2","3","4","5"], correct: 1, expl: "[H⁺] = √(10⁻⁵ × 0,1) = 10⁻³ → pH = 3." },
+  { q: "Larutan NH₃ 0,1 M (Kb = 10⁻⁵) memiliki pH sebesar...", opts: ["11","10","9","12"], correct: 0, expl: "[OH⁻] = √(10⁻⁵ × 0,1) = 10⁻³ → pOH = 3 → pH = 11." },
+  { q: "Indikator yang memiliki trayek pH 8,3–10,0 dengan perubahan tak berwarna menjadi merah adalah...", opts: ["Fenolftalein","Bromtimol biru","Metil merah","Lakmus"], correct: 0, expl: "Fenolftalein (PP) tidak berwarna di asam, merah di basa." },
+  { q: "Derajat ionisasi (α) asam lemah 0,1 M yang memiliki Ka = 1,6×10⁻⁵ adalah...", opts: ["1,26%","0,4%","4,0%","12,6%"], correct: 0, expl: "α = √(Ka/Ma) = √(1,6e-5/0,1) = √1,6e-4 = 0,0126 = 1,26%." },
+  { q: "pH larutan Ba(OH)₂ 0,005 M pada 25°C adalah...", opts: ["12","11","10","13"], correct: 0, expl: "[OH⁻] = 0,005 × 2 = 0,01 M → pOH = 2 → pH = 12." },
+  { q: "Kertas lakmus merah akan berubah menjadi biru jika dicelupkan ke dalam larutan...", opts: ["Asam","Basa","Garam","Air suling"], correct: 1, expl: "Lakmus merah → biru dalam suasana basa." },
+  { q: "Menurut Bronsted-Lowry, spesi yang bertindak sebagai basa adalah...", opts: ["Donor proton","Akseptor proton","Donor elektron","Akseptor elektron"], correct: 1, expl: "Basa = akseptor proton." },
+  { q: "Air murni pada suhu 25°C memiliki pH...", opts: ["6","7","8","5"], correct: 1, expl: "Air murni netral, [H⁺]=[OH⁻]=10⁻⁷ → pH=7." }
+];
+
+const generateBank = [
+  { q: "Hitung pH larutan HCl 0,01 M!", opts: ["1","2","3","4"], correct: 1, expl: "[H⁺]=10⁻² → pH=2" },
+  { q: "Konsentrasi H⁺ dalam H₂SO₄ 0,02 M adalah...", opts: ["0,02 M","0,04 M","0,01 M","0,001 M"], correct: 1, expl: "Valensi 2 → 0,04 M" },
+  { q: "pH CH₃COOH 0,1 M (Ka=1,8×10⁻⁵) mendekati...", opts: ["2,87","3","4","5"], correct: 0, expl: "[H⁺]=√(1,8e-5×0,1)=1,34e-3 → pH=2,87" },
+  { q: "Larutan NH₃ 0,1 M (Kb=10⁻⁵) memiliki pH...", opts: ["11","10","9","12"], correct: 0, expl: "[OH⁻]=10⁻³ → pOH=3 → pH=11" },
+  { q: "Warna indikator fenolftalein pada pH 9 adalah...", opts: ["Tak berwarna","Merah","Kuning","Biru"], correct: 1, expl: "Fenolftalein merah pada pH > 8,3" },
+  { q: "Contoh basa kuat adalah...", opts: ["NH₃","NaOH","CH₃COOH","H₂O"], correct: 1, expl: "NaOH adalah basa kuat" },
+  { q: "Menurut Arrhenius, basa adalah zat yang dalam air menghasilkan...", opts: ["H⁺","OH⁻","H₃O⁺","Elektron"], correct: 1, expl: "Basa menghasilkan OH⁻" },
+  { q: "Kw pada suhu 25°C adalah...", opts: ["10⁻⁷","10⁻¹⁴","10⁷","10¹⁴"], correct: 1, expl: "Kw = 10⁻¹⁴" }
+];
+
+// ======================= DATA ZAT SIMULASI (21 zat) =======================
+const substances = [
+  { id:"air", name:"Air", icon:"💧", formula:"H₂O", type:"neutral", valensi:0, desc:"Netral pH 7 (25°C)" },
+  { id:"hcl", name:"HCl", icon:"⚡", formula:"HCl", type:"strong_acid", valensi:1, desc:"Asam klorida, asam kuat monoprotik" },
+  { id:"h2so4", name:"H₂SO₄", icon:"🔋", formula:"H₂SO₄", type:"strong_acid", valensi:2, desc:"Asam sulfat, asam kuat bervalensi 2" },
+  { id:"hno3", name:"HNO₃", icon:"🧪", formula:"HNO₃", type:"strong_acid", valensi:1, desc:"Asam nitrat, asam kuat" },
+  { id:"ch3cooh", name:"CH₃COOH", icon:"🍾", formula:"CH₃COOH", type:"weak_acid", ka:1.8e-5, desc:"Asam asetat (cuka), Ka = 1,8×10⁻⁵" },
+  { id:"hcooh", name:"HCOOH", icon:"🌿", formula:"HCOOH", type:"weak_acid", ka:1.8e-4, desc:"Asam format, Ka = 1,8×10⁻⁴" },
+  { id:"hcn", name:"HCN", icon:"⚠️", formula:"HCN", type:"weak_acid", ka:6.2e-10, desc:"Asam sianida, sangat lemah" },
+  { id:"hf", name:"HF", icon:"🔥", formula:"HF", type:"weak_acid", ka:6.8e-4, desc:"Asam fluorida, Ka = 6,8×10⁻⁴" },
+  { id:"h2co3", name:"H₂CO₃", icon:"🥤", formula:"H₂CO₃", type:"weak_acid", ka:4.3e-7, desc:"Asam karbonat, Ka = 4,3×10⁻⁷" },
+  { id:"naoh", name:"NaOH", icon:"🧼", formula:"NaOH", type:"strong_base", valensi:1, desc:"Natrium hidroksida, basa kuat" },
+  { id:"koh", name:"KOH", icon:"🧴", formula:"KOH", type:"strong_base", valensi:1, desc:"Kalium hidroksida, basa kuat" },
+  { id:"caoh2", name:"Ca(OH)₂", icon:"🪨", formula:"Ca(OH)₂", type:"strong_base", valensi:2, desc:"Kalsium hidroksida, basa kuat" },
+  { id:"baoh2", name:"Ba(OH)₂", icon:"⚗️", formula:"Ba(OH)₂", type:"strong_base", valensi:2, desc:"Barium hidroksida, basa kuat" },
+  { id:"nh3", name:"NH₃", icon:"🧴", formula:"NH₃", type:"weak_base", kb:1.8e-5, desc:"Amonia, basa lemah Kb=1,8×10⁻⁵" },
+  { id:"ch3nh2", name:"Metilamina", icon:"🍃", formula:"CH₃NH₂", type:"weak_base", kb:4.4e-4, desc:"Metilamina, basa lemah" },
+  { id:"nahco3", name:"NaHCO₃", icon:"🥄", formula:"NaHCO₃", type:"weak_base", kb:2.3e-8, desc:"Natrium bikarbonat, hidrolisis basa" },
+  { id:"na2co3", name:"Na₂CO₃", icon:"🧂", formula:"Na₂CO₃", type:"weak_base", kb:2.1e-4, desc:"Natrium karbonat, hidrolisis basa kuat" },
+  { id:"nh4cl", name:"NH₄Cl", icon:"🧂", formula:"NH₄Cl", type:"weak_acid_salt", ka:5.6e-10, desc:"Amonium klorida, hidrolisis asam" },
+  { id:"ch3coona", name:"CH₃COONa", icon:"🍾", formula:"CH₃COONa", type:"weak_base", kb:5.6e-10, desc:"Natrium asetat, hidrolisis basa" }
+];
+let currentSub = substances[0];
+let currentConc = 0.1;
+function computePH(sub, conc) {
+  if (sub.type === "strong_acid") { let h = conc * sub.valensi; if(h<=0) return 7; return Math.min(14, Math.max(0, -Math.log10(h))); }
+  if (sub.type === "strong_base") { let oh = conc * sub.valensi; if(oh<=0) return 7; return 14 - (-Math.log10(oh)); }
+  if (sub.type === "weak_acid" && sub.ka) { let h = Math.sqrt(sub.ka * conc); if(isNaN(h)) return 7; return -Math.log10(h); }
+  if (sub.type === "weak_base" && sub.kb) { let oh = Math.sqrt(sub.kb * conc); if(isNaN(oh)) return 7; return 14 - (-Math.log10(oh)); }
+  if (sub.type === "weak_acid_salt" && sub.ka) { let h = Math.sqrt(sub.ka * conc); return -Math.log10(h); }
+  if (sub.id === "nahco3") { let oh = Math.sqrt(2.3e-8 * conc); return 14 - (-Math.log10(oh)); }
+  if (sub.id === "na2co3") { let oh = Math.sqrt(2.1e-4 * conc); return 14 - (-Math.log10(oh)); }
+  if (sub.id === "ch3coona") { let oh = Math.sqrt(5.6e-10 * conc); return 14 - (-Math.log10(oh)); }
+  return 7;
+}
+function formatSci(v){ if(v>=0.01) return v.toFixed(4)+" M"; let e=Math.floor(Math.log10(v)); let c=v/Math.pow(10,e); return c.toFixed(2)+"×10<sup>"+e+"</sup> M"; }
+function getPhColor(ph){ const cols=["#b91c1c","#dc2626","#ea580c","#d97706","#ca8a04","#4d7c0f","#16a34a","#0891b2","#0284c7","#1d4ed8","#4f46e5","#7c3aed","#6d28d9","#4c1d95","#1e0050"]; return cols[Math.min(14,Math.max(0,Math.round(ph)))]; }
+function getIndicatorDesc(ph){ if(ph<=3) return "Merah (asam kuat)"; if(ph<=5) return "Jingga (asam)"; if(ph<=6.5) return "Kuning (asam lemah)"; if(ph<=7.5) return "Hijau (netral)"; if(ph<=9) return "Biru (basa lemah)"; if(ph<=11) return "Biru tua (basa)"; return "Ungu (basa kuat)"; }
+let simContainer = null;
+function renderSimulasi(container) {
+  simContainer = container;
+  container.innerHTML = `
+    <div class="glass-card p-6 mb-5">
+      <h3 class="text-lg font-bold mb-1 text-indigo-800 flex items-center gap-2">🔬 Visualisasi Skala Mikro — Perilaku Molekul &amp; Ion dalam Larutan</h3>
+      <p class="text-xs text-gray-500 mb-3">Animasi partikel berubah sesuai zat &amp; konsentrasi yang dipilih. Skala ionisasi (α) ditampilkan di bawah kanvas.</p>
+      <canvas id="micro-canvas" height="180" style="width:100%;border-radius:14px;background:#0f172a;display:block;"></canvas>
+      <div id="micro-legend" class="flex flex-wrap gap-3 mt-3 text-xs justify-center"></div>
+      <div id="micro-ionbar" class="mt-3 px-2">
+        <div class="flex justify-between text-xs font-semibold mb-1"><span>Derajat Ionisasi (α)</span><span id="micro-ionpct" class="text-indigo-700 font-bold">0%</span></div>
+        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden"><div id="micro-ionbar-fill" class="h-4 rounded-full transition-all duration-500" style="width:0%;background:linear-gradient(90deg,#f87171,#a78bfa)"></div></div>
+        <div class="flex justify-between text-[10px] text-gray-400 mt-0.5"><span>0% (molekul utuh)</span><span>100% (terionisasi sempurna)</span></div>
+      </div>
+      <div id="micro-desc" class="mt-2 text-sm text-center text-gray-700 italic px-2"></div>
+      <div class="mt-4 px-2">
+        <p class="text-xs font-bold text-indigo-700 mb-2 text-center">⚗️ Proses Ionisasi: Molekul Utuh → Terionisasi Sempurna</p>
+        <div class="flex items-stretch gap-1 overflow-x-auto pb-1" id="ion-journey-strip"></div>
+        <div class="flex justify-between text-[10px] text-gray-400 mt-1 px-1"><span>← Molekul Utuh (α≈0%)</span><span>Terionisasi Sempurna (α=100%) →</span></div>
+      </div>
+    </div>
+    <div class="glass-card p-6">
+      <h3 class="text-2xl font-bold mb-4 flex gap-2 text-purple-800"><i data-lucide="flask-conical"></i> Simulasi pH Interaktif (21 Zat)</h3>
+      <div class="grid lg:grid-cols-2 gap-7">
+        <div><div id="sim-substances" class="grid grid-cols-3 gap-2 max-h-80 overflow-y-auto p-1"></div><div class="mt-4"><label class="text-sm font-bold">⚖️ Konsentrasi (Molaritas)</label><input type="range" id="conc-slider" min="0.0001" max="1.0" step="0.0001" value="0.1" class="w-full"><div class="flex justify-between text-xs"><span>0.0001 M</span><span id="conc-val" class="font-mono font-bold">0.1000 M</span><span>1.0 M</span></div></div><div id="sim-detail" class="text-sm bg-purple-50 p-3 rounded-xl mt-3">Klik zat untuk melihat detail, pH dihitung otomatis.</div></div>
+        <div class="flex flex-col items-center">
+          <div class="relative w-48 h-56"><svg viewBox="0 0 180 200"><defs><clipPath id="liq"><rect x="28" y="18" width="124" height="162" rx="6"/></clipPath></defs><rect id="liquid-fill" x="29" y="38" width="122" height="141" fill="#22d3ee" opacity="0.6" clip-path="url(#liq)"/><rect x="28" y="18" width="124" height="162" rx="6" fill="none" stroke="#94a3b8" stroke-width="2.5"/><line x1="140" y1="60" x2="152" y2="60" stroke="#94a3b8"/><line x1="140" y1="95" x2="152" y2="95" stroke="#94a3b8"/><line x1="140" y1="130" x2="152" y2="130" stroke="#94a3b8"/><text x="155" y="63" font-size="9">¾L</text><text x="155" y="98" font-size="9">½L</text><text x="155" y="133" font-size="9">¼L</text><rect x="84" y="14" width="12" height="60" rx="6" fill="#e2e8f0" stroke="#94a3b8"/><rect id="thermo-fill" x="86" y="54" width="8" height="20" rx="4" fill="#ef4444"/><circle cx="90" cy="76" r="8" fill="#ef4444"/></svg></div>
+          <div id="ph-number" class="text-6xl font-black text-purple-700 mt-2">7.00</div>
+          <div id="ph-status" class="px-4 py-1 rounded-full text-sm font-bold bg-gray-200">Netral</div>
+          <div class="w-full ph-gradient-bar mt-3 relative"><div id="ph-cursor" class="absolute w-2 h-5 bg-black rounded-full -top-1.5 transform -translate-x-1/2" style="left:50%"></div></div>
+          <div class="flex gap-3 mt-4"><div class="bg-red-100 p-2 rounded"><span class="font-bold">[H₃O⁺]</span><br><span id="h3o-val" class="font-mono">1e-7 M</span></div><div class="bg-blue-100 p-2 rounded"><span class="font-bold">[OH⁻]</span><br><span id="oh-val" class="font-mono">1e-7 M</span></div></div>
+          <div class="mt-3 text-sm bg-white/70 p-2 rounded w-full text-center"><span class="font-bold">🎨 Indikator universal:</span> <span id="indicator-text">Hijau (pH 7)</span></div>
+        </div>
+      </div>
+    </div>`;
+  const grid = container.querySelector('#sim-substances');
+  substances.forEach(sub => {
+    const div = document.createElement('div'); div.className = `substance-card ${currentSub.id===sub.id?'active':''}`;
+    div.innerHTML = `<div class="text-lg">${sub.icon}</div><div class="text-xs font-bold">${sub.name}</div><div class="text-[9px]">${sub.formula}</div>`;
+    div.onclick = () => { currentSub = sub; document.querySelectorAll('#sim-substances .substance-card').forEach(c=>c.classList.remove('active')); div.classList.add('active'); container.querySelector('#sim-detail').innerHTML = `${sub.name} (${sub.formula}) — ${sub.desc}`; updateSimUI(container); };
+    grid.appendChild(div);
+  });
+  const slider = container.querySelector('#conc-slider');
+  slider.addEventListener('input', (e) => { currentConc = parseFloat(e.target.value); container.querySelector('#conc-val').innerText = currentConc.toFixed(4)+" M"; updateSimUI(container); });
+  updateSimUI(container);
+  setTimeout(() => initMicroAnimation(container), 30);
+}
+
+// ========== MICRO ANIMATION ENGINE ==========
+let microAnimFrame = null;
+let microParticles = [];
+let microContainer = null;
+let microCtx = null;
+let microW = 760, microH = 180;
+
+function initMicroAnimation(container) {
+  if (microAnimFrame) { cancelAnimationFrame(microAnimFrame); microAnimFrame = null; }
+  const canvas = container.querySelector('#micro-canvas');
+  if (!canvas) return;
+  microContainer = container;
+  microW = canvas.offsetWidth || 760; canvas.width = microW; microH = canvas.height;
+  microCtx = canvas.getContext('2d');
+  buildMicroParticles(); drawMicroFrame();
+}
+function buildMicroParticles() {
+  if (!microContainer) return;
+  const sub = currentSub; const conc = currentConc; microParticles = [];
+  let alpha = 0;
+  if (sub.type === 'strong_acid' || sub.type === 'strong_base') { alpha = 1.0; }
+  else if ((sub.type === 'weak_acid' || sub.type === 'weak_acid_salt') && sub.ka) { alpha = Math.min(1, Math.sqrt(sub.ka / conc)); }
+  else if (sub.type === 'weak_base' && sub.kb) { alpha = Math.min(1, Math.sqrt(sub.kb / conc)); }
+  else if (sub.id === 'air') { alpha = Math.min(1, 1e-7 / conc); }
+  else { alpha = 0.05; }
+  const pct = (alpha * 100);
+  const ionPctEl = microContainer.querySelector('#micro-ionpct');
+  const ionBarFill = microContainer.querySelector('#micro-ionbar-fill');
+  if (ionPctEl) ionPctEl.textContent = pct >= 99.5 ? '100%' : pct.toFixed(2) + '%';
+  if (ionBarFill) {
+    ionBarFill.style.width = Math.max(2, pct) + '%';
+    if (pct >= 99) ionBarFill.style.background = 'linear-gradient(90deg,#f87171,#ef4444)';
+    else if (pct > 20) ionBarFill.style.background = 'linear-gradient(90deg,#fbbf24,#a78bfa)';
+    else ionBarFill.style.background = 'linear-gradient(90deg,#60a5fa,#a78bfa)';
+  }
+  const maxTotal = 20; const nIonized = Math.round(alpha * maxTotal); const nMolecule = maxTotal - nIonized;
+  for (let i = 0; i < 28; i++) { microParticles.push({ x: Math.random()*microW, y: Math.random()*microH, vx:(Math.random()-0.5)*0.5, vy:(Math.random()-0.5)*0.5, r:5, color:'#38bdf8', label:'', type:'water' }); }
+  for (let i = 0; i < nMolecule; i++) { microParticles.push({ x: Math.random()*microW, y: Math.random()*microH, vx:(Math.random()-0.5)*0.45, vy:(Math.random()-0.5)*0.45, r:10, color:'#a78bfa', label:sub.formula||'?', type:'molecule' }); }
+  const isAcid = sub.type==='strong_acid'||sub.type==='weak_acid'||sub.type==='weak_acid_salt';
+  const isBase = sub.type==='strong_base'||sub.type==='weak_base';
+  for (let i = 0; i < nIonized; i++) {
+    if (isAcid||sub.id==='air') { microParticles.push({ x:Math.random()*microW, y:Math.random()*microH, vx:(Math.random()-0.5)*1.3, vy:(Math.random()-0.5)*1.3, r:7, color:'#f87171', label:'H⁺', type:'ion_h' }); }
+    if (isBase||sub.id==='air') { microParticles.push({ x:Math.random()*microW, y:Math.random()*microH, vx:(Math.random()-0.5)*1.3, vy:(Math.random()-0.5)*1.3, r:7, color:'#34d399', label:'OH⁻', type:'ion_oh' }); }
+    if (sub.type==='strong_acid') { microParticles.push({ x:Math.random()*microW, y:Math.random()*microH, vx:(Math.random()-0.5)*1.0, vy:(Math.random()-0.5)*1.0, r:7, color:'#fb923c', label:'A⁻', type:'ion_anion' }); }
+    if (sub.type==='strong_base') { microParticles.push({ x:Math.random()*microW, y:Math.random()*microH, vx:(Math.random()-0.5)*1.0, vy:(Math.random()-0.5)*1.0, r:7, color:'#facc15', label:'M⁺', type:'ion_cation' }); }
+  }
+  const legend = microContainer.querySelector('#micro-legend');
+  if (legend) {
+    const items = [{ color:'#38bdf8', label:'H₂O (pelarut)' }];
+    if (nMolecule > 0) items.push({ color:'#a78bfa', label:sub.formula+' (belum terionisasi)' });
+    if (nIonized > 0) {
+      if (isAcid||sub.id==='air') items.push({ color:'#f87171', label:'H⁺' });
+      if (isBase||sub.id==='air') items.push({ color:'#34d399', label:'OH⁻' });
+      if (sub.type==='strong_acid') items.push({ color:'#fb923c', label:'A⁻ (anion)' });
+      if (sub.type==='strong_base') items.push({ color:'#facc15', label:'M⁺ (kation)' });
+    }
+    legend.innerHTML = items.map(it => `<span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:50%;background:${it.color};display:inline-block;"></span>${it.label}</span>`).join('');
+  }
+  const desc = microContainer.querySelector('#micro-desc');
+  if (desc) {
+    if (alpha >= 0.995) desc.textContent = `${sub.name} terionisasi sempurna (α=100%). Seluruh molekul menjadi ion.`;
+    else if (alpha < 0.01) desc.textContent = `${sub.name} hampir tidak terionisasi (α≈0%). Dominan molekul utuh.`;
+    else desc.textContent = `${sub.name} terionisasi sebagian (α=${(alpha*100).toFixed(2)}%). Ada molekul utuh dan ion.`;
+  }
+  // Ion journey strip
+  const strip = microContainer.querySelector('#ion-journey-strip');
+  if (strip) {
+    const steps = 7;
+    strip.innerHTML = Array.from({length: steps}, (_, i) => {
+      const frac = i / (steps - 1);
+      const nMol = Math.round((1 - frac) * 5);
+      const nIon = Math.round(frac * 5);
+      return `<div style="flex:1;min-width:64px;background:#1e293b;border-radius:10px;padding:6px 4px;text-align:center;">
+        ${Array.from({length:nMol}).map(()=>'<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#a78bfa;margin:1px;"></span>').join('')}
+        ${Array.from({length:nIon}).map(()=>'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f87171;margin:1px;"></span>').join('')}
+        <div style="color:#94a3b8;font-size:9px;margin-top:3px;">${Math.round(frac*100)}%</div>
+      </div>`;
+    }).join('');
+  }
+}
+function drawMicroFrame() {
+  if (!microCtx) return;
+  microCtx.clearRect(0, 0, microW, microH);
+  microParticles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < p.r) { p.x = p.r; p.vx = Math.abs(p.vx); }
+    if (p.x > microW - p.r) { p.x = microW - p.r; p.vx = -Math.abs(p.vx); }
+    if (p.y < p.r) { p.y = p.r; p.vy = Math.abs(p.vy); }
+    if (p.y > microH - p.r) { p.y = microH - p.r; p.vy = -Math.abs(p.vy); }
+    microCtx.beginPath(); microCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+    microCtx.fillStyle = p.color; microCtx.fill();
+    if (p.label) {
+      microCtx.fillStyle = '#fff'; microCtx.font = `bold ${Math.max(6, p.r * 0.8)}px Inter,sans-serif`;
+      microCtx.textAlign = 'center'; microCtx.textBaseline = 'middle';
+      microCtx.fillText(p.label, p.x, p.y);
+    }
+  });
+  microAnimFrame = requestAnimationFrame(drawMicroFrame);
+}
+function updateSimUI(container) {
+  const ph = computePH(currentSub, currentConc);
+  const phColor = getPhColor(ph);
+  const phNum = container.querySelector('#ph-number');
+  if (phNum) { phNum.innerText = ph.toFixed(2); phNum.style.color = phColor; }
+  const status = container.querySelector('#ph-status');
+  if (status) {
+    let label='Netral', bg='#e2e8f0', col='#374151';
+    if (ph < 7) { label=`Asam (pH ${ph.toFixed(2)})`; bg='#fee2e2'; col='#b91c1c'; }
+    else if (ph > 7) { label=`Basa (pH ${ph.toFixed(2)})`; bg='#dbeafe'; col='#1d4ed8'; }
+    status.innerText=label; status.style.background=bg; status.style.color=col;
+  }
+  const cursor = container.querySelector('#ph-cursor');
+  if (cursor) cursor.style.left = ((ph/14)*100)+'%';
+  const liq = container.querySelector('#liquid-fill');
+  if (liq) { liq.setAttribute('fill', phColor); }
+  const thermo = container.querySelector('#thermo-fill');
+  if (thermo) { const h=Math.max(5, Math.min(140,(ph/14)*140)); thermo.setAttribute('y',180-h); thermo.setAttribute('height',h); thermo.setAttribute('fill', phColor); }
+  const h3o = Math.pow(10, -ph);
+  const oh = Math.pow(10, -(14 - ph));
+  const h3oEl = container.querySelector('#h3o-val');
+  const ohEl = container.querySelector('#oh-val');
+  if (h3oEl) h3oEl.innerHTML = formatSci(h3o);
+  if (ohEl) ohEl.innerHTML = formatSci(oh);
+  const indEl = container.querySelector('#indicator-text');
+  if (indEl) indEl.innerText = getIndicatorDesc(ph);
+  buildMicroParticles();
+}
+
+// ========== MATERI ==========
+const materiHTML = `<div class="space-y-8">
+    <div class="glass-card p-5 bg-gradient-to-r from-blue-50 to-purple-50">
+      <h3 class="text-xl font-bold mb-3 flex gap-2 text-indigo-800"><i data-lucide="video"></i> Video Pembelajaran Asam Basa</h3>
+      <div class="grid md:grid-cols-2 gap-5">
+        <div><div class="video-wrapper"><iframe src="https://www.youtube.com/embed/ABJjRldplC4" frameborder="0" allowfullscreen></iframe></div><p class="text-sm mt-1 text-center font-medium">🎬 Teori Arrhenius, Brønsted-Lowry, Lewis</p></div>
+        <div><div class="video-wrapper"><iframe src="https://www.youtube.com/embed/xDs9c9YQXlY" frameborder="0" allowfullscreen></iframe></div><p class="text-sm mt-1 text-center font-medium">📊 Perhitungan pH Asam/Basa Kuat & Lemah</p></div>
+      </div>
+    </div>
+    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2 text-purple-800">🎨 Skala pH (0 - 14)</h3><div class="ph-scale-box"><div class="ph-segment" style="background:#b91c1c;">0-1</div><div style="background:#dc2626;" class="ph-segment">2</div><div style="background:#ea580c;" class="ph-segment">3</div><div style="background:#d97706;" class="ph-segment">4</div><div style="background:#ca8a04;" class="ph-segment">5</div><div style="background:#4d7c0f;" class="ph-segment">6</div><div style="background:#16a34a;" class="ph-segment">7</div><div style="background:#0891b2;" class="ph-segment">8</div><div style="background:#0284c7;" class="ph-segment">9</div><div style="background:#1d4ed8;" class="ph-segment">10</div><div style="background:#4f46e5;" class="ph-segment">11</div><div style="background:#7c3aed;" class="ph-segment">12</div><div style="background:#6d28d9;" class="ph-segment">13</div><div style="background:#4c1d95;" class="ph-segment">14</div></div><p class="text-sm text-center font-semibold">ASAM KUAT ← NETRAL (pH=7) → BASA KUAT</p></div>
+    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2 text-cyan-800">💧 Autoionisasi Air</h3><div class="ion-diagram"><div class="text-center"><span class="text-3xl">💧</span><br>H₂O</div><div class="text-2xl">⇌</div><div class="text-center"><span class="text-3xl">🔴</span><br>H⁺</div><div class="text-2xl">+</div><div class="text-center"><span class="text-3xl">🔵</span><br>OH⁻</div></div><p class="text-sm text-center mt-3"><strong>Kw = [H⁺][OH⁻] = 10⁻¹⁴</strong> (25°C). Air murni: [H⁺] = [OH⁻] = 10⁻⁷ M → pH = 7</p></div>
+    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2 text-green-700">🧪 Perbandingan Asam Kuat vs Asam Lemah</h3><div class="grid md:grid-cols-2 gap-5"><div class="bg-white p-3 rounded-xl shadow"><p class="font-bold text-center">Asam Kuat (HCl 0,1 M)</p><div class="comp-bar-container"><div style="width:100%; background:#dc2626; height:20px; border-radius:10px;"></div></div><p class="text-xs text-center">Ionisasi ≈ 100% (α = 1)</p></div><div class="bg-white p-3 rounded-xl shadow"><p class="font-bold text-center">Asam Lemah (CH₃COOH 0,1 M)</p><div class="comp-bar-container"><div style="width:1.34%; background:#facc15; height:20px; border-radius:10px;"></div></div><p class="text-xs text-center">Ionisasi ≈ 1,34% (α = 0,0134)</p></div></div><p class="text-sm mt-2">Asam kuat terionisasi sempurna → [H⁺] = M. Asam lemah terionisasi sebagian → [H⁺] = √(Ka·M)</p></div>
+    <div class="glass-card p-5"><h3 class="text-2xl font-bold mb-3 text-pink-700">1. Teori Asam Basa</h3><div class="grid md:grid-cols-3 gap-5"><div class="theory-card p-4" onclick="window.toggleDetail('arrhDetail')"><span class="text-xs font-black text-blue-600">Arrhenius</span><div id="arrhDetail" class="detail-content">Asam melepas H⁺, basa melepas OH⁻ dalam air. Contoh: HCl→H⁺+Cl⁻; NaOH→Na⁺+OH⁻.</div></div><div class="theory-card p-4" onclick="window.toggleDetail('bronDetail')"><span class="text-xs font-black text-indigo-600">Brønsted-Lowry</span><div id="bronDetail" class="detail-content">Asam donor H⁺, basa akseptor H⁺. Pasangan konjugasi. Contoh: NH₃+H₂O⇌NH₄⁺+OH⁻.</div></div><div class="theory-card p-4" onclick="window.toggleDetail('lewisDetail')"><span class="text-xs font-black text-purple-600">Lewis</span><div id="lewisDetail" class="detail-content">Asam akseptor elektron, basa donor elektron. Contoh: BF₃+NH₃→F₃B←NH₃.</div></div></div></div>
+    <div class="glass-card p-5 bg-gradient-to-r from-cyan-50 to-sky-50"><h3 class="text-xl font-bold mb-2">2. Tetapan Kesetimbangan Air (Kw)</h3><p>Kw = [H⁺][OH⁻] = 10⁻¹⁴ (25°C). pH + pOH = 14. Penambahan asam ↗ [H⁺] ↘ [OH⁻]</p></div>
+    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2">3. Kekuatan Asam & Basa</h3><p>Asam kuat: HCl, H₂SO₄, HNO₃. Basa kuat: NaOH, KOH, Ca(OH)₂. Asam lemah: CH₃COOH (Ka=1,8×10⁻⁵). Basa lemah: NH₃ (Kb=1,8×10⁻⁵). α = √(Ka/Ma). Ka×Kb=Kw.</p></div>
+    <div class="glass-card p-5 bg-gradient-to-r from-yellow-50 to-orange-50"><h3 class="text-xl font-bold mb-2">4. Rumus Perhitungan pH</h3><ul class="list-disc pl-5"><li>Asam Kuat: [H⁺]=Ma×a, pH=-log[H⁺]</li><li>Basa Kuat: [OH⁻]=Mb×b, pH=14+log[OH⁻]</li><li>Asam Lemah: [H⁺]=√(Ka·Ma)</li><li>Basa Lemah: [OH⁻]=√(Kb·Mb)</li></ul><div class="example-box"><strong>Contoh:</strong> HCl 0,01M pH=2; CH₃COOH 0,1M (Ka=10⁻⁵) pH=3; NH₃ 0,1M pH=11.</div></div>
+    <div class="glass-card p-5"><h3 class="text-xl font-bold mb-2 text-pink-700">🎨 Trayek Indikator Asam Basa</h3><div><div class="font-bold">Fenolftalein (PP)</div><div class="indicator-strip"><div style="flex:1; background:white; border:1px solid #ccc; text-align:center;">pH &lt; 8.3 (tak berwarna)</div><div style="flex:1; background:#dc2626; color:white; text-align:center;">pH &gt; 10 (merah)</div></div></div><div class="mt-2"><div class="font-bold">Bromtimol biru (BTB)</div><div class="indicator-strip"><div style="flex:1; background:#eab308; text-align:center;">pH &lt; 6.0 (kuning)</div><div style="flex:1; background:#3b82f6; color:white; text-align:center;">pH &gt; 7.6 (biru)</div></div></div><div class="mt-2"><div class="font-bold">Metil merah (MM)</div><div class="indicator-strip"><div style="flex:1; background:#dc2626; color:white; text-align:center;">pH &lt; 4.4 (merah)</div><div style="flex:1; background:#eab308; text-align:center;">pH &gt; 6.2 (kuning)</div></div></div></div>
+    <div class="glass-card p-5 bg-gradient-to-r from-green-50 to-emerald-50"><h3 class="text-xl font-bold mb-2">5. Daftar Senyawa</h3><div class="grid md:grid-cols-2 gap-4"><div><strong>Asam Kuat:</strong> HCl, HBr, HI, H₂SO₄, HNO₃<br><strong>Asam Lemah:</strong> CH₃COOH, HCOOH, HCN, HF, H₂CO₃</div><div><strong>Basa Kuat:</strong> LiOH, NaOH, KOH, Ca(OH)₂, Ba(OH)₂<br><strong>Basa Lemah:</strong> NH₃, NH₄OH, Al(OH)₃</div></div></div>
+  </div>`;
+let materiEditable = materiHTML;
+function renderMateri(container, isGuru) {
+  container.innerHTML = `<div id="materi-wrapper" class="space-y-8">${materiEditable}</div>${isGuru ? '<div class="mt-4 text-right"><button id="edit-materi-btn" class="bg-amber-500 text-white px-5 py-2 rounded-xl shadow">✏️ Edit Materi (Guru)</button></div>' : ''}`;
+  if (isGuru) document.getElementById('edit-materi-btn')?.addEventListener('click', () => { let newContent = prompt("Edit materi (HTML):", materiEditable); if(newContent) { materiEditable = newContent; renderMateri(container, true); } });
+  window.toggleDetail = (id) => { const el = document.getElementById(id); if(el) el.classList.toggle('show'); };
+}
+
+// ========== SUMATIF MURID ==========
+function renderSumatifMurid(container) {
+  const username = currentUser.username;
+  const alreadySubmitted = studentSubmitted[username] === true;
+  let savedAnswers = [];
+  if (alreadySubmitted) { const scoreData = studentScores.find(s => s.username === username); if (scoreData) savedAnswers = scoreData.answers || []; }
+  container.innerHTML = `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-3 text-purple-800">📝 Ujian Sumatif (10 Soal)</h3><div id="quiz-area"></div>${!alreadySubmitted ? '<button id="submit-sumatif" class="mt-5 bg-purple-600 text-white px-5 py-2 rounded-xl">Kumpulkan Jawaban</button>' : '<div class="mt-4 p-3 bg-green-100 rounded-xl text-green-800">✅ Anda telah menyelesaikan sumatif. Tidak dapat mengulang.</div>'}</div>`;
+  const quizArea = container.querySelector('#quiz-area');
+  let studentAnswers = new Array(10).fill(null);
+  function renderQuestions(answers = null) {
+    quizArea.innerHTML = '';
+    soalBank.forEach((q, idx) => {
+      const selected = answers ? answers[idx] : null;
+      const div = document.createElement('div'); div.className = "bg-white p-4 rounded-xl border mb-3 shadow-sm";
+      div.innerHTML = `<div class="font-bold text-indigo-700">${idx+1}. ${q.q}</div><div class="grid grid-cols-2 gap-2 mt-2" id="q-${idx}">${q.opts.map((o,i)=>`<button class="sum-opt text-left p-2 rounded-lg border text-sm" data-q="${idx}" data-val="${i}" ${answers?'disabled':''}>${String.fromCharCode(65+i)}. ${o}</button>`).join('')}</div>`;
+      quizArea.appendChild(div);
+      if (selected !== undefined && selected !== null) {
+        const optsDiv = div.querySelector(`#q-${idx}`);
+        optsDiv.querySelectorAll('button').forEach(btn => { const val=parseInt(btn.dataset.val); if(val===soalBank[idx].correct) btn.classList.add('bg-green-100'); if(val===selected&&val!==soalBank[idx].correct) btn.classList.add('bg-red-100'); });
+      }
+    });
+    if (!answers && !alreadySubmitted) {
+      document.querySelectorAll('.sum-opt').forEach(btn => {
+        btn.addEventListener('click', () => { const qIdx=parseInt(btn.dataset.q); const sel=parseInt(btn.dataset.val); studentAnswers[qIdx]=sel; document.getElementById(`q-${qIdx}`).querySelectorAll('button').forEach(b=>b.classList.remove('bg-blue-100')); btn.classList.add('bg-blue-100'); });
+      });
+    }
+  }
+  if (alreadySubmitted && savedAnswers.length) renderQuestions(savedAnswers); else renderQuestions();
+  const submitBtn = container.querySelector('#submit-sumatif');
+  if (submitBtn && !alreadySubmitted) {
+    submitBtn.addEventListener('click', () => {
+      if (studentAnswers.some(a => a === null)) { alert("Jawab semua soal terlebih dahulu!"); return; }
+      let score = 0; studentAnswers.forEach((ans, i) => { if (ans === soalBank[i].correct) score++; });
+      studentScores.push({ username, nama: currentUser.nama, score, timestamp: new Date().toISOString(), answers: [...studentAnswers] });
+      studentSubmitted[username] = true;
+      localStorage.setItem('chemedu_scores', JSON.stringify(studentScores));
+      localStorage.setItem('chemedu_submitted', JSON.stringify(studentSubmitted));
+      alert(`Nilai Anda: ${score}/10. Jawaban telah disimpan.`);
+      renderSumatifMurid(container);
+    });
+  }
+}
+
+// ========== SUMATIF GURU ==========
+function renderSumatifGuru(container) {
+  container.innerHTML = `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-3 text-purple-800">📊 Manajemen Nilai Sumatif</h3><div id="nilai-list"></div><button id="reset-all-nilai" class="mt-4 bg-red-600 text-white px-4 py-2 rounded-xl">Reset Semua Nilai Murid</button></div>`;
+  const listDiv = container.querySelector('#nilai-list');
+  function renderList() {
+    listDiv.innerHTML = `<table class="min-w-full bg-white rounded-xl overflow-hidden shadow border"><thead class="bg-gradient-to-r from-purple-100 to-pink-100"><tr><th class="p-2">Nama</th><th>Username</th><th>Skor</th><th>Waktu</th><th>Aksi</th></tr></thead><tbody>${studentScores.map(s=>`<tr><td class="p-2">${s.nama||s.username}</td><td class="p-2">${s.username}</td><td class="p-2">${s.score}/10</td><td class="p-2">${new Date(s.timestamp).toLocaleString()}</td><td class="p-2"><button class="hapus-nilai text-red-500 font-bold" data-user="${s.username}">Hapus</button></td></tr>`).join('')}</tbody></table>`;
+    document.querySelectorAll('.hapus-nilai').forEach(btn => { btn.addEventListener('click', () => { const user=btn.dataset.user; studentScores=studentScores.filter(s=>s.username!==user); delete studentSubmitted[user]; localStorage.setItem('chemedu_scores',JSON.stringify(studentScores)); localStorage.setItem('chemedu_submitted',JSON.stringify(studentSubmitted)); renderList(); }); });
+  }
+  renderList();
+  container.querySelector('#reset-all-nilai')?.addEventListener('click', () => { if(confirm("Hapus semua data nilai murid?")) { studentScores=[]; studentSubmitted={}; localStorage.setItem('chemedu_scores','[]'); localStorage.setItem('chemedu_submitted','{}'); renderList(); } });
+}
+
+// ========== GENERATE SOAL ==========
+function renderGenerate(container) {
+  container.innerHTML = `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-3 text-purple-800">✨ Generate Soal Acak (Pilihan Ganda)</h3><button id="gen-soal-btn" class="bg-indigo-600 text-white px-5 py-2 rounded-xl mb-4">🎲 Generate Soal Baru</button><div id="gen-output" class="p-4 bg-white rounded-xl border min-h-[60px]"></div></div>`;
+  const genBtn = container.querySelector('#gen-soal-btn');
+  const genOutput = container.querySelector('#gen-output');
+  function loadRandomSoal() {
+    const soal = { ...generateBank[Math.floor(Math.random() * generateBank.length)] };
+    genOutput.innerHTML = '';
+    const qDiv = document.createElement('div'); qDiv.className = 'font-bold mb-3 text-purple-800'; qDiv.textContent = '📌 ' + soal.q; genOutput.appendChild(qDiv);
+    const optsDiv = document.createElement('div'); optsDiv.className = 'space-y-2'; genOutput.appendChild(optsDiv);
+    const fbDiv = document.createElement('div'); fbDiv.className = 'mt-3 text-sm p-3 rounded-lg border-l-4 hidden'; genOutput.appendChild(fbDiv);
+    let answered = false;
+    soal.opts.forEach((opt, i) => {
+      const btn = document.createElement('button'); btn.className = 'gen-opt-btn w-full text-left p-2 rounded-lg border text-sm hover:bg-purple-50 transition'; btn.textContent = String.fromCharCode(65+i)+'. '+opt; btn.dataset.idx = i; optsDiv.appendChild(btn);
+      btn.addEventListener('click', () => {
+        if (answered) return; answered = true;
+        const selected = parseInt(btn.dataset.idx); const isCorrect = selected === soal.correct;
+        optsDiv.querySelectorAll('.gen-opt-btn').forEach(b => { b.disabled=true; const bIdx=parseInt(b.dataset.idx); if(bIdx===soal.correct) b.classList.add('bg-green-100','border-green-500','font-bold'); else if(bIdx===selected&&!isCorrect) b.classList.add('bg-red-100','border-red-400'); });
+        fbDiv.classList.remove('hidden'); fbDiv.className = 'mt-3 text-sm p-3 rounded-lg border-l-4 '+(isCorrect?'bg-green-50 border-green-500':'bg-red-50 border-red-500');
+        fbDiv.innerHTML = `<div class="font-bold text-base mb-1">${isCorrect?'✅ Benar!':'❌ Salah!'}</div>${!isCorrect?`<div class="mb-1 text-green-700 font-semibold">✔ Jawaban benar: <strong>${String.fromCharCode(65+soal.correct)}. ${soal.opts[soal.correct]}</strong></div>`:''}<div class="font-semibold text-gray-700 mt-1">📖 Penyelesaian:</div><div class="mt-1 text-gray-800">${soal.expl}</div>`;
+      });
+    });
+  }
+  genBtn.addEventListener('click', loadRandomSoal); loadRandomSoal();
+}
+
+// ========== DISKUSI ==========
+function renderDiskusi(container) {
+  container.innerHTML = `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-3 text-purple-800">💬 Ruang Diskusi</h3><div id="chat-box" class="h-80 overflow-y-auto bg-slate-50 rounded-xl p-4 mb-4 border flex flex-col"></div><div class="flex gap-2"><input id="chat-input" placeholder="Tanyakan tentang asam basa..." class="flex-1 p-2 border rounded-xl"><button id="send-chat" class="bg-purple-600 text-white px-4 rounded-xl">Kirim</button></div></div>`;
+  function addChat(msg, sender) { let box=document.getElementById('chat-box'); let div=document.createElement('div'); div.className=`chat-message ${sender==='user'?'user':'bot'} mb-2`; div.innerHTML=`<b>${sender==='user'?currentUser.nama||'Anda':'🤖 Asisten'}:</b> ${msg}`; box.appendChild(div); box.scrollTop=box.scrollHeight; }
+  document.getElementById('send-chat')?.addEventListener('click', () => { let inp=document.getElementById('chat-input'); let txt=inp.value.trim(); if(!txt) return; addChat(txt,'user'); setTimeout(()=>{ addChat(`Silakan cek materi "Skala pH" atau "Rumus pH" untuk menjawab: "${txt}"`, 'bot'); },400); inp.value=''; });
+}
+
+// ========== REFLEKSI ==========
+function renderRefleksi(container) {
+  container.innerHTML = `<div class="glass-card p-6"><h3 class="text-xl font-bold mb-3 text-purple-800">📔 Jurnal Refleksi Diri</h3><textarea id="ref-text" rows="4" class="w-full p-3 border rounded-xl" placeholder="Tulis pemahaman Anda setelah belajar asam basa..."></textarea><button id="save-ref" class="mt-3 bg-green-600 text-white px-5 py-2 rounded-xl">Simpan Refleksi</button><div id="ref-output" class="mt-4 text-sm italic"></div></div>`;
+  const saved = localStorage.getItem(`refleksi_${currentUser.username}`);
+  if (saved) document.getElementById('ref-output').innerHTML = `📘 Refleksi tersimpan: "${saved}"`;
+  document.getElementById('save-ref')?.addEventListener('click', () => { let txt=document.getElementById('ref-text').value; localStorage.setItem(`refleksi_${currentUser.username}`,txt); document.getElementById('ref-output').innerHTML=`✅ Tersimpan: "${txt.substring(0,100)}"`; });
+}
+
+// ========== PETUNJUK ==========
+function renderPetunjuk(container) {
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="glass-card p-6 text-center">
+        <div class="flex justify-center mb-4"><div class="w-16 h-16 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg"><i data-lucide="atom" class="w-8 h-8 text-white"></i></div></div>
+        <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-800 to-pink-600 bg-clip-text text-transparent">📘 Petunjuk Penggunaan ChemEdu</h1>
+        <p class="text-gray-600 mt-2">Platform pembelajaran interaktif Asam Basa untuk Guru & Murid</p>
+        <div class="mt-4 flex flex-wrap justify-center gap-2"><span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">🎓 Guru / 👩‍🎓 Murid</span><span class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">💰 Gratis</span><span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-semibold">📱 Responsif</span></div>
+      </div>
+      <div class="glass-card p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">🔐 Sistem Login & Registrasi</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="bg-white/60 rounded-xl p-4 border border-purple-100">
+            <div class="font-bold text-purple-700 mb-2">👨‍🏫 Akun Guru</div>
+            <ul class="text-sm text-gray-700 space-y-1 list-disc pl-4">
+              <li>Daftar dengan role <strong>Guru</strong></li>
+              <li>Masukkan <strong>Kode Guru: CHEM2026</strong></li>
+              <li>Akses: edit materi, lihat nilai, kelola kelas</li>
+            </ul>
+          </div>
+          <div class="bg-white/60 rounded-xl p-4 border border-pink-100">
+            <div class="font-bold text-pink-700 mb-2">👩‍🎓 Akun Murid</div>
+            <ul class="text-sm text-gray-700 space-y-1 list-disc pl-4">
+              <li>Daftar dengan role <strong>Murid</strong> (tanpa kode)</li>
+              <li>Akses: materi, simulasi, diskusi, ujian, refleksi</li>
+            </ul>
+          </div>
+        </div>
+        <p class="text-xs text-center text-gray-500 mt-4">💡 Demo: guru_demo/guru123 | murid_demo/murid123</p>
+      </div>
+      <div class="glass-card p-6"><h2 class="text-xl font-bold text-gray-800 mb-3">🔬 Simulasi pH Interaktif</h2><p class="text-sm text-gray-700">Pilih 1 dari 21 zat → geser slider konsentrasi → lihat perubahan pH, warna indikator, visualisasi partikel real-time.</p></div>
+      <div class="glass-card p-4 text-center text-gray-500 text-xs">© 2026 ChemEdu — Kelompok 8 · S1-Pendidikan Kimia · Universitas Negeri Malang<br><span class="text-purple-600 font-semibold">Belajar Asam Basa Jadi Menyenangkan! ⚗️</span></div>
+    </div>`;
+  lucide.createIcons();
+}
+
+// ========== WEB DEV ==========
+function renderWebDev(container) {
+  container.innerHTML = `
+    <div class="space-y-6">
+      <div class="glass-card overflow-hidden">
+        <div class="bg-gradient-to-r from-violet-700 via-purple-600 to-pink-600 p-6 text-white text-center">
+          <h2 class="text-2xl font-black">Kelompok 8 — Kimia Asam Basa</h2>
+          <p class="text-purple-200 text-sm mt-1">S1-Pendidikan KIMIA · Universitas Negeri Malang · 2026</p>
+        </div>
+        <div class="p-5">
+          <div class="grid md:grid-cols-2 gap-4">
+            <div class="bg-purple-50 rounded-xl p-4"><p class="font-bold text-purple-800">🎯 Visi</p><p class="text-sm mt-2 text-gray-700">Mewujudkan platform pembelajaran kimia asam basa yang interaktif, inovatif, dan mudah diakses oleh seluruh peserta didik dan pendidik.</p></div>
+            <div class="bg-pink-50 rounded-xl p-4"><p class="font-bold text-pink-800">🚀 Misi</p><ul class="text-sm mt-2 text-gray-700 space-y-1 list-disc pl-4"><li>Simulasi pH real-time dengan visualisasi molekuler</li><li>Soal latihan generatif dengan umpan balik instan</li><li>Sistem manajemen nilai dan refleksi pribadi</li></ul></div>
+          </div>
+        </div>
+      </div>
+      <div class="glass-card p-5">
+        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i data-lucide="code" class="text-purple-600 w-5 h-5"></i> Teknologi yang Digunakan</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div class="bg-orange-50 rounded-xl p-3 text-center border"><p class="font-bold text-orange-700">HTML5</p><p class="text-xs text-gray-500 mt-1">Struktur & Semantik</p></div>
+          <div class="bg-sky-50 rounded-xl p-3 text-center border"><p class="font-bold text-sky-700">Tailwind CSS</p><p class="text-xs text-gray-500 mt-1">Styling Responsif</p></div>
+          <div class="bg-yellow-50 rounded-xl p-3 text-center border"><p class="font-bold text-yellow-700">JavaScript</p><p class="text-xs text-gray-500 mt-1">Logika & Interaksi</p></div>
+          <div class="bg-purple-50 rounded-xl p-3 text-center border"><p class="font-bold text-purple-700">Canvas API</p><p class="text-xs text-gray-500 mt-1">Animasi Mikro</p></div>
+        </div>
+      </div>
+      <div class="glass-card p-4 text-center text-gray-500 text-xs">© 2026 ChemEdu — Kelompok 8 · S1-Pendidikan Kimia · Universitas Negeri Malang<br><span class="text-purple-600 font-semibold">Belajar Asam Basa Jadi Menyenangkan! ⚗️</span></div>
+    </div>`;
+  lucide.createIcons();
+}
+
+// ========== NAVIGASI & INIT APP ==========
+let menuItems = [];
+function initApp() {
+  const isGuru = currentUser.role === 'guru';
+  menuItems = [
+    { id:'petunjuk', icon:'help-circle', label:'Petunjuk', render:renderPetunjuk },
+    { id:'materi', icon:'book-open', label:'Materi', render:(c)=>renderMateri(c,isGuru) },
+    { id:'simulasi', icon:'flask-conical', label:'Simulasi pH', render:renderSimulasi },
+    { id:'diskusi', icon:'message-square', label:'Diskusi', render:renderDiskusi },
+    { id:'generatesoal', icon:'sparkles', label:'Generate Soal', render:renderGenerate },
+    { id:'sumatif', icon:'clipboard-list', label:'Sumatif', render:(c)=>isGuru?renderSumatifGuru(c):renderSumatifMurid(c) },
+    { id:'refleksi', icon:'heart', label:'Refleksi', render:renderRefleksi },
+    { id:'webdev', icon:'code', label:'Web Development', render:renderWebDev }
+  ];
+  const sidebarMenu = document.getElementById('sidebar-menu');
+  sidebarMenu.innerHTML = '';
+  menuItems.forEach(item => {
+    const div = document.createElement('div'); div.className='sidebar-item'; div.dataset.page=item.id;
+    div.innerHTML=`<i data-lucide="${item.icon}" class="w-5 h-5"></i><span>${item.label}</span>`;
+    div.onclick = () => {
+      document.querySelectorAll('.sidebar-item').forEach(i=>i.classList.remove('active')); div.classList.add('active');
+      document.getElementById('page-title').innerText = item.label;
+      if (microAnimFrame) { cancelAnimationFrame(microAnimFrame); microAnimFrame=null; }
+      item.render(document.getElementById('page-content'));
+      lucide.createIcons();
+      if (item.id==='simulasi'&&simContainer) setTimeout(()=>updateSimUI(simContainer),50);
+      autoCollapseSidebar();
+    };
+    sidebarMenu.appendChild(div);
+  });
+  // Badge role
+  const badge = document.getElementById('role-badge');
+  if (badge) {
+    badge.textContent = isGuru ? '👨‍🏫 Guru' : '👩‍🎓 Murid';
+    badge.className = `text-xs px-3 py-1 rounded-full font-semibold text-white ${isGuru ? 'badge-guru' : 'badge-murid'}`;
+  }
+  document.getElementById('user-info').innerHTML = `<div class="user-info-text">👤 ${currentUser.nama||currentUser.username}</div><div class="user-info-text text-violet-500 text-[10px]">${currentUser.role}</div>`;
+  document.querySelector('.sidebar-item').click();
+  lucide.createIcons();
+}
+
+document.getElementById('menuToggle')?.addEventListener('click', () => sidebar.classList.toggle('mobile-open'));
+document.getElementById('logout-btn')?.addEventListener('click', () => {
+  currentUser = null;
+  document.getElementById('auth-overlay').classList.remove('hidden');
+  document.getElementById('page-content').innerHTML = '';
+  document.getElementById('sidebar-menu').innerHTML = '';
+  document.getElementById('user-info').innerHTML = '';
+  document.getElementById('login-username').value = '';
+  document.getElementById('login-password').value = '';
+  clearMessages();
+});
+
+window.toggleDetail = (id) => { const el=document.getElementById(id); if(el) el.classList.toggle('show'); };
+</script>
+</body>
+</html>
